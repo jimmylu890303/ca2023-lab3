@@ -113,3 +113,31 @@ class ByteAccessTest extends AnyFlatSpec with ChiselScalatestTester {
     }
   }
 }
+
+class Hw2Test extends AnyFlatSpec with ChiselScalatestTester {
+  behavior.of("Single Cycle CPU")
+  it should "Implementation of multiplication overflow prediction for unsigned integers using CLZ" in {
+    test(new TestTopModule("main.asmbin")).withAnnotations(TestAnnotations.annos) { c =>
+      for (i <- 1 to 10) {
+        c.clock.step(1000)
+        c.io.mem_debug_read_address.poke((i * 4).U) // Avoid timeout
+      }
+      // result should be 0 0 1 1
+      c.io.mem_debug_read_address.poke(4.U)
+      c.clock.step()
+      c.io.mem_debug_read_data.expect(0.U)
+
+      c.io.mem_debug_read_address.poke(8.U)
+      c.clock.step()
+      c.io.mem_debug_read_data.expect(0.U)
+
+      c.io.mem_debug_read_address.poke(12.U)
+      c.clock.step()
+      c.io.mem_debug_read_data.expect(1.U)
+
+      c.io.mem_debug_read_address.poke(16.U)
+      c.clock.step()
+      c.io.mem_debug_read_data.expect(1.U)
+    }
+  }
+}
